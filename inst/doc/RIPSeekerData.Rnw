@@ -1,0 +1,143 @@
+%\VignetteIndexEntry{RIP-seq datasets for testing RIPSeeker package}
+
+\documentclass[a4paper]{article}
+
+\usepackage{Sweave}
+\usepackage{times}
+\usepackage{hyperref}
+\usepackage{subfig}
+\usepackage{natbib}
+\usepackage{graphicx}
+
+% \usepackage{xr}
+% \externaldocument[NAR-]{/Users/mike/Desktop/nar-latex2010/nar}
+% \externaldocument[SD-]{/Users/mike/Desktop/nar-latex2010/SupplementaryData/SD}
+
+\hypersetup{ 
+colorlinks,
+citecolor=black,
+filecolor=black, 
+linkcolor=black, 
+urlcolor=black 
+}
+
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+
+\newcommand{\SD}{Supplementary Data}
+
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\textsf{R}}
+
+\newcommand{\TopHat}{\software{TopHat}}
+\newcommand{\Bowtie}{\software{Bowtie}}
+
+\bibliographystyle{plainnat}
+
+\title{RIP-seq datasets for testing RIPSeeker package}
+\author{Yue Li \\ \texttt{yueli@cs.toronto.edu}}
+\date{\today}
+
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section{PRC2 Datasets}
+The RIP-seq data from \cite{Zhao:2010du} for Ezh2 (a PRC2 unique subunit) in mouse embryonic stem cell (mESC) were downloaded from Gene Expression Omnibus (GEO) (GSE17064). Briefly, there are in total five datasets. Two datasets correspond to the non-specific and specific negative controls using the antibody IgG and mutant mESC depleted of Ezh2 (Ezh2 -/-) (MT), respectively. Only the specific negative control is used in our test. The two and one remaining datasets correspond to the libraries constructed from two biological replicates of the wild type mESC. Notably, the library construction and \emph{strand-specific} sequencing generated sequences from the opposite strand of the PRC2-bound RNA \cite{Zhao:2010du}, consequently, each read was treated as if it were reverse complemented. After the quality control (QC) and alignments (\textbf{\nameref{SD-preprocess}} and \textbf{\nameref{SD-align}} in \SD), the technical replicates were merged, resulting in three test files - RIP-biorep1, RIP-biorep2, and CTL with 1,022,474, 442,030, and 208,445 reads mapped to unique loci of the mouse reference genome (mm9 build) (Table \ref{SD-data}).
+
+<<PRC2,eval=TRUE>>=
+library(RIPSeeker)
+
+extdata.dir <- system.file("extdata", package="RIPSeekerData")
+
+bamFiles <- list.files(extdata.dir, "\\.bam$", 
+                       recursive=TRUE, full.names=TRUE)
+
+bamFiles.PRC2 <- grep("PRC2/", bamFiles, value=TRUE)
+
+# import, process, and convert BAM data to GappedAlignments object
+# using function combineAlignGals 
+
+# PRC2
+PRC2.rip <- grep(pattern="SRR039214", bamFiles.PRC2, value=TRUE, invert=TRUE)
+
+PRC2.rip.biorep1 <- PRC2.rip[grep(pattern="SRR039213", PRC2.rip, invert=TRUE)]
+
+PRC2.rip.biorep2 <- PRC2.rip[grep(pattern="SRR039213", PRC2.rip, invert=FALSE)]
+
+PRC2.ctl <- grep(pattern="SRR039214", bamFiles, value=TRUE, invert=FALSE)
+
+
+ripGal.PRC2.rip.biorep1 <- combineAlignGals(PRC2.rip.biorep1,
+  			reverseComplement=TRUE, genomeBuild="mm9")
+
+
+ripGal.PRC2.rip.biorep2 <- combineAlignGals(PRC2.rip.biorep2,
+				reverseComplement=TRUE, genomeBuild="mm9")
+							
+
+ripGal.PRC2.ctl <- combineAlignGals(PRC2.ctl,
+				reverseComplement=TRUE, genomeBuild="mm9")
+
+ripGal.PRC2.rip.biorep1
+
+ripGal.PRC2.rip.biorep2
+
+ripGal.PRC2.ctl
+@
+
+
+\section{CCNT1 Datasets}
+The data for CCNT1 were generated from two RIP-seq experiments. The pilot experiment generated 775,582 and 773,785 strand-specific raw reads, and 5,853 and 4,556 uniquely mapped read remain after the stringent QC for the CCNT1 and GFP control RIP RNA libraries, respectively. Same as in the PRC2 data, the reads came from the second strand of the cDNA synthesis opposite to the original RNA strand. The non-strand-specific library from the second screen has deeper coverage with 1,647,641 and 2,369,271 raw reads, and 26,859 and 45,024 uniquely aligned reads under QC for CCNT1 and GFP, respectively (Table \ref{SD-data}). Since the two experiments were performed with slightly different protocols, we treated them as two separate biological replicates for the following analyses.
+
+
+<<CCNT1, eval=TRUE>>=
+library(RIPSeeker)
+
+extdata.dir <- system.file("extdata", package="RIPSeekerData")
+
+bamFiles <- list.files(extdata.dir, "\\.bam$", 
+                       recursive=TRUE, full.names=TRUE)
+
+bamFiles.CCNT1 <- grep("CCNT1/", bamFiles, value=TRUE)
+
+
+# import, process, and convert BAM data to GappedAlignments object
+# using function combineAlignGals 
+
+CCNT1.rip <- grep(pattern="humanCCNT1", bamFiles.CCNT1, value=TRUE, invert=TRUE)
+
+CCNT1.ctl <- grep(pattern="humanGFP", bamFiles.CCNT1, value=TRUE, invert=TRUE)
+
+ripGal.CCNT1.rip <- combineAlignGals(CCNT1.rip,
+				reverseComplement=TRUE, genomeBuild="hg19")
+							
+
+ripGal.CCNT1.ctl <- combineAlignGals(CCNT1.ctl,
+				reverseComplement=TRUE, genomeBuild="hg19")
+							
+ripGal.CCNT1.rip							
+
+ripGal.CCNT1.ctl
+@
+
+
+\section{Session Info}
+<<sessi>>=
+sessionInfo()
+@
+
+
+
+
+\bibliography{RIPSeekerData}
+\end{document}
