@@ -1,6 +1,6 @@
 Package: RIPSeekerData
 Title: test data for RIPSeeker
-Version: 1.22.0
+Version: 1.23.0
 Author: Yue Li
 Maintainer: Alejandro Reyes <reyes@embl.de>
 Description: The RIP-seq data in BAM format are the test data for the package RIPSeeker. The data correspond to two RIP-seq experiments, namely PRC2 and CCNT1. Raw data from NCBI Gene Expression Omnibus under accession numbers GSE17064 for PRC2 and in-house for CCNT1.
